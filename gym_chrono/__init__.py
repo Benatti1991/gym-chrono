@@ -26,3 +26,10 @@ register(
     #nondeterministic = True,
 )
 
+register(
+    id='RobosimianRigidEnv-v0',
+    entry_point='gym_chrono.envs:RobosimianRigidEnv'
+    #timestep_limit=1000,
+    #reward_threshold=10.0,
+    #nondeterministic = True,
+)
