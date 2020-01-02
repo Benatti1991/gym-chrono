@@ -91,7 +91,7 @@ class RobosimianRigidEnv(ChronoBaseEnv):
         high = np.full(76, 1000)
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(32,), dtype=np.float32)
-        chrono.SetChronoDataPath('C:/codes/ChronoRobosimian/data/')
+        chrono.SetChronoDataPath('/home/simonebenatti/codes/radu-chrono/chrono/data/')
         self.time_step = 1e-3
         
         # Drop the robot on rigid terrain
@@ -153,7 +153,7 @@ class RobosimianRigidEnv(ChronoBaseEnv):
         
         
         
-        self.my_sys.SetMaxItersSolverSpeed(200)
+        self.my_sys.SetSolverMaxIterations(200)
         #my_sys.SetMaxiter(200)
         #my_sys.SetMaxItersSolverStab(1000)
         self.my_sys.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN)
