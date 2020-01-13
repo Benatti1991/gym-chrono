@@ -1,7 +1,10 @@
 #-------------------------------------------------------------------------------
 # Load the Chrono::Engine units
 import pychrono as chrono
-from pychrono import irrlicht as chronoirr
+try:
+   from pychrono import irrlicht as chronoirr
+except:
+   print('Could not import ChronoIrrlicht')
 import numpy as np
 from gym import spaces
 import math
@@ -33,7 +36,7 @@ class ChronoAnt(ChronoBaseEnv):
       chrono.ChCollisionModel.SetDefaultSuggestedMargin(0.001)
 
     #ant_sys.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN) # precise, more slow
-      self.ant_sys.SetMaxItersSolverSpeed(70)
+      self.ant_sys.SetSolverMaxIterations(70)
       
 
       self.ant_material = chrono.ChMaterialSurfaceNSC()

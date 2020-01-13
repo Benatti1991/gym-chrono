@@ -83,9 +83,10 @@ class ChronoComauR3(ChronoBaseEnv):
               	#print (my_item.GetName())		
               # Optionally set some solver parameters.
               #self.robosystem.SetMaxPenetrationRecoverySpeed(1.00)
-              self.robosystem.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN);
-              self.robosystem.SetMaxItersSolverSpeed(600);
-              self.robosystem.SetSolverWarmStarting(True);
+              solver = chrono.ChSolverBB()
+              self.robosystem.SetSolver(solver)
+              solver.SetMaxIterations(600)
+              solver.EnableWarmStart(True)
               self.robosystem.Set_G_acc(chrono.ChVectorD(0,-9.8,0))
               """
               $$$$$$$$ FIND THE SW DEFINED CONSTRAINTS, GET THEIR self.frames AND GET RID OF EM $$$$$$$$ 

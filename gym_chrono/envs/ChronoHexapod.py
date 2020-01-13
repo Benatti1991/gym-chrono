@@ -90,9 +90,10 @@ class ChronoHexapod(ChronoBaseEnv):
               	#print (my_item.GetName())		
               # Optionally set some solver parameters.
               #self.hexapod_sys.SetMaxPenetrationRecoverySpeed(1.00)
-              self.hexapod_sys.SetSolverType(chrono.ChSolver.Type_BARZILAIBORWEIN);
-              self.hexapod_sys.SetMaxItersSolverSpeed(600);
-              self.hexapod_sys.SetSolverWarmStarting(True);
+              solver = chrono.ChSolverBB()
+              self.hexapod_sys.SetSolver(solver)
+              solver.SetMaxIterations(600);
+              solver.EnableWarmStart(True)
               self.hexapod_sys.Set_G_acc(chrono.ChVectorD(0,-9.8,0))
               """
               $$$$$$$$ FIND THE SW DEFINED CONSTRAINTS, GET THEIR self.frames AND GET RID OF EM $$$$$$$$ 

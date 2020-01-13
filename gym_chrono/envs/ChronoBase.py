@@ -1,5 +1,8 @@
 import pychrono as chrono
-from pychrono import irrlicht as chronoirr
+try:
+   from pychrono import irrlicht as chronoirr
+except:
+   print('Could not import ChronoIrrlicht')
 import numpy as np
 from gym import Env, spaces
 from collections import OrderedDict
