@@ -90,7 +90,7 @@ class RobosimianRigidEnv(ChronoBaseEnv):
         low = np.full(76, -1000)
         high = np.full(76, 1000)
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
-        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(32,), dtype=np.float32)
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(28,), dtype=np.float32)
         chrono.SetChronoDataPath('/home/simonebenatti/codes/radu-chrono/chrono/data/')
         self.time_step = 1e-3
         
@@ -279,7 +279,7 @@ class RobosimianRigidEnv(ChronoBaseEnv):
         actuation = tuple(map(tuple, arr_rs))
         return actuation
     def reset(self):
-        
+        print('RESETTING')
         self.my_sys.Clear()
         self.my_sys.SetChTime(0.0)
         
@@ -498,7 +498,7 @@ class RobosimianRigidEnv(ChronoBaseEnv):
         	##    robot.ReportContacts()
         	##}
             """
-            #♣sim_frame += 1
+            #sim_frame += 1
         self.numsteps = 0
         self.isdone = False
         self.first_time =False
@@ -509,6 +509,11 @@ class RobosimianRigidEnv(ChronoBaseEnv):
         self.numsteps += 1
         
         x0 = np.asarray(self.driver.GetActuation()).flatten()
+        # Force wheel speed to 0
+        for i, el in enumerate(action):
+            if i % 8 == 7:
+                action = np.insert(action, i, 0)
+        action = np.concatenate([action, [0]])
         self.actions = action
         self.delta_angles = action * self.time_step
         
@@ -536,7 +541,7 @@ class RobosimianRigidEnv(ChronoBaseEnv):
         return obs, rew, self.isdone, self.info     
 
 
-    def render(self):
+    def render(self, mode='human'):
         if not self.render_setup:
                 assert self.render_active
                 self.myapplication = chronoirr.ChIrrApp(self.my_sys, "RoboSimian - Rigid terrain",
@@ -556,6 +561,8 @@ class RobosimianRigidEnv(ChronoBaseEnv):
         self.myapplication.BeginScene(True, True, chronoirr.SColor(255, 140, 161, 192))
         self.myapplication.DrawAll()
         self.myapplication.EndScene()
+        if mode=='rgb_array':
+            return np.zeros((32,32))
 
     def get_ob(self):
         self.chassis_pos = [self.robot.GetChassisBody().GetPos().x, self.robot.GetChassisBody().GetPos().y, self.robot.GetChassisBody().GetPos().z]
@@ -576,7 +583,7 @@ class RobosimianRigidEnv(ChronoBaseEnv):
                  
     def calc_rew(self):
               
-              electricity_cost     = -2.0    # cost for using motors -- this parameter should be carefully tuned against reward for making progress, other values less improtant
+              electricity_cost     = -.5    # cost for using motors -- this parameter should be carefully tuned against reward for making progress, other values less improtant
               #stall_torque_cost    = -0.1    # cost for running electric current through a motor even at zero rotational speed, small
 
               #joints_at_limit_cost = -0.2    # discourage stuck joints
@@ -590,7 +597,7 @@ class RobosimianRigidEnv(ChronoBaseEnv):
                       torque_cost += -1
               #self.alive_bonus =  +1 if self.body_abdomen.GetContactForce().Length() == 0 else -1
               progress = self.calc_progress()
-              rew = progress + 0.1*(power_cost) + torque_cost
+              rew = 10*progress + 0.1*(power_cost) + torque_cost
               return rew
     def calc_progress(self):
               d = np.linalg.norm( [self.Ytarg - self.robot.GetChassisBody().GetPos().y, self.Xtarg - self.robot.GetChassisBody().GetPos().x] )
