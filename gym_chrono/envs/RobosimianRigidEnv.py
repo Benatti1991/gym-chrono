@@ -123,7 +123,8 @@ class RobosimianRigidEnv(ChronoBaseEnv):
         self.image_output = False
         
         self.LimbList = [robosimian.FL, robosimian.FR, robosimian.RL, robosimian.RR]
-        self.max_ang =     [0.8, 2.4, 1.8, 2.0, 1.8, 2.0, 2.9, np.inf]
+        # BlockedWheel : wheel ang clamped to 0
+        self.max_ang =     [0.8, 2.4, 1.8, 2.0, 1.8, 2.0, 2.9, 0]
         self.max_omegas =  [0.53, 0.58, 0.80, 0.69, 0.43, 0.69, 0.66, 1.18]
         self.max_torques = [80, 152, 240, 116, 110, 107, 8.2, 6.7]
         
@@ -507,26 +508,29 @@ class RobosimianRigidEnv(ChronoBaseEnv):
 
     def step(self, action):
         self.numsteps += 1
-        
+        # Getting last joints rotations
         x0 = np.asarray(self.driver.GetActuation()).flatten()
         # Force wheel speed to 0
+        # BlockedWheels: set wheels rot to 0
         for i, el in enumerate(action):
             if i % 8 == 7:
                 action = np.insert(action, i, 0)
+        # BlockedWheels: set last wheel rot to 0
         action = np.concatenate([action, [0]])
         self.actions = action
+        # actions are speeds, next angles = speed + timestep
         self.delta_angles = action * self.time_step
         
         for (i, ang) in enumerate(self.delta_angles):
              self.delta_angles[i] = ang * self.max_omegas[i%8]
-        
+        # Un-clamped new angles
         uc_ang = x0 + self.delta_angles
-        
+        # Clamping angle values in limits
         for (i, ang) in enumerate(uc_ang):
             uc_ang[i] = np.clip(ang, -self.max_ang[i%8], self.max_ang[i%8])
-        
+        # Resahaping actions 32 -> [4,8]
         actuation = self.Actuate(uc_ang)
-        
+        # Pass new angle setpoints
         self.driver.SetActuation(actuation)
         
         self.robot.DoStepDynamics(self.time_step)
@@ -562,7 +566,7 @@ class RobosimianRigidEnv(ChronoBaseEnv):
         self.myapplication.DrawAll()
         self.myapplication.EndScene()
         if mode=='rgb_array':
-            return np.zeros((32,32))
+            return np.zeros((32,32,3))
 
     def get_ob(self):
         self.chassis_pos = [self.robot.GetChassisBody().GetPos().x, self.robot.GetChassisBody().GetPos().y, self.robot.GetChassisBody().GetPos().z]
